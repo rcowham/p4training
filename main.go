@@ -16,8 +16,8 @@ import (
 
 const defaultRegion = "eu-west-1"
 const defaultSecurityGroup = "secgroup-training-windows"
-const defaultAMI = "ami-0121afa3964191d8a"
-const defaultInstanceSize = "t2.small" // Better performance than micro, even if not free
+const defaultAMI = "ami-099c3bc9f4d739cae"
+const defaultInstanceSize = "t2.medium" // Better performance than micro, even if not free
 
 func main() {
 
@@ -25,15 +25,15 @@ func main() {
 		username = kingpin.Flag(
 			"username",
 			"Username to create for",
-		).Short('u').String()
+		).Short('u').Required().String()
 		email = kingpin.Flag(
 			"email",
 			"Users email",
-		).Short('e').String()
+		).Short('e').Required().String()
 		shortcode = kingpin.Flag(
 			"shortcode",
 			"Shortcode for course",
-		).Short('s').String()
+		).Short('s').Required().String()
 	)
 
 	kingpin.Version(version.Print("p4training"))

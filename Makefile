@@ -22,11 +22,11 @@ build:
 # Builds distribution
 dist:
 	GOOS=linux GOARCH=amd64 go build -o ${BINARY}.linux-amd64 ${LDFLAGS}
-	GOOS=windows GOARCH=amd64 go build -o ${BINARY}.windows-amd64 ${LDFLAGS}
+	GOOS=windows GOARCH=amd64 go build -o ${BINARY}.windows-amd64.exe ${LDFLAGS}
 	go build -o ${BINARY}.darwin-amd64 ${LDFLAGS}
-	-chmod +x ${BINARY}.linux-amd64 ${BINARY}.windows-amd64 ${BINARY}.darwin-amd64
+	-chmod +x ${BINARY}.linux-amd64 ${BINARY}.windows-amd64.exe ${BINARY}.darwin-amd64
 	rm -f ${BINARY}.*.gz
-	gzip ${BINARY}.linux-amd64 ${BINARY}.windows-amd64 ${BINARY}.darwin-amd64
+	gzip ${BINARY}.linux-amd64 ${BINARY}.windows-amd64.exe ${BINARY}.darwin-amd64
 
 # Installs our project: copies binaries
 install:
