@@ -8,6 +8,9 @@ import (
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/ec2"
 
+	"github.com/rcowham/p4training/version"
+	"gopkg.in/alecthomas/kingpin.v2"
+
 	"fmt"
 )
 
@@ -17,6 +20,26 @@ const defaultAMI = "ami-0121afa3964191d8a"
 const defaultInstanceSize = "t2.small" // Better performance than micro, even if not free
 
 func main() {
+
+	var (
+		username = kingpin.Flag(
+			"username",
+			"Username to create for",
+		).Short('u').String()
+		email = kingpin.Flag(
+			"email",
+			"Users email",
+		).Short('e').String()
+		shortcode = kingpin.Flag(
+			"shortcode",
+			"Shortcode for course",
+		).Short('s').String()
+	)
+
+	kingpin.Version(version.Print("p4training"))
+	kingpin.HelpFlag.Short('h')
+	kingpin.Parse()
+
 	sess, err := session.NewSession(&aws.Config{
 		Region: aws.String(defaultRegion)},
 	)
@@ -72,15 +95,19 @@ func main() {
 		Tags: []*ec2.Tag{
 			{
 				Key:   aws.String("Name"),
-				Value: aws.String("P4TrainingInstance"),
+				Value: aws.String(fmt.Sprintf("%s#%s", *shortcode, *email)),
 			},
 			{
 				Key:   aws.String("P4Training"),
 				Value: aws.String("Yes"),
 			},
 			{
+				Key:   aws.String("Username"),
+				Value: aws.String(*username),
+			},
+			{
 				Key:   aws.String("Course"),
-				Value: aws.String("Some Customer"),
+				Value: aws.String(*shortcode),
 			},
 		},
 	})
