@@ -75,6 +75,9 @@ func main() {
 	if *AMI != "" {
 		defaultAMI = *AMI
 	}
+	if *username == "" {
+		*username = *email
+	}
 	// Retrieve the security group descriptions
 	result, err := svc.DescribeSecurityGroups(&ec2.DescribeSecurityGroupsInput{
 		GroupNames: aws.StringSlice([]string{defaultSecurityGroup}),
