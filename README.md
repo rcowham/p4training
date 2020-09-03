@@ -44,6 +44,8 @@ To create an AWS instance for a particular user:
 
     ./p4training -s SOME-COURSE -e fred@example.com -u "Fred Bloggs"
 
+Note that you only need to quote arguments when they have spaces in them - such as username above.
+
 This will create an EC2 instance with a name `SOME-COURSE#fred@example.com` with tag showing username.
 
 It is easy to wrap the above in a Bash or Windows to create multiple users. E.g.
@@ -54,3 +56,13 @@ echo "jim@example.com,Jim Jones" >> users.csv
 
 cat users.csv | while IFS="," read -e email user; do ./p4training -s "MY-COURSE" -u "$user" -e "$email"; done
 ```
+
+# Finding created instances
+
+This command will find all instances with tag value of "MY-COURSE" as specified in shortcode above:
+
+    aws ec2 describe-instances --filters Name=tag-value,Values=MY-COURSE --query "Reservations[*].Instances[*].[InstanceId,PublicIpAddress,Tags[*]]" --output text > instances.txt
+
+It is then easy to parse out the results, for example:
+
+    grep -E "^i\-|Username" instances.txt | paste - - | awk '{print $4, $2}'

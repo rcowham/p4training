@@ -2,6 +2,7 @@ package main
 
 import (
 	"log"
+	"os"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
@@ -15,17 +16,23 @@ import (
 )
 
 const defaultRegion = "eu-west-1"
-const defaultSecurityGroup = "secgroup-training-windows"
-const defaultAMI = "ami-099c3bc9f4d739cae"
-const defaultInstanceSize = "t2.medium" // Better performance than micro, even if not free
+const defaultSecurityGroupWindows = "secgroup-training-windows"
+const defaultSecurityGroupLinux = "secgroup-training-linux"
+const defaultAMIWindows = "ami-099c3bc9f4d739cae"
+const defaultAMILinux = "ami-07f014eead871d2d6"
+const defaultInstanceSizeWindows = "t2.medium" // Better performance than micro, even if not free
+const defaultInstanceSizeLinux = "t3.micro"
+const defaultKeynameWindows = ""
+const defaultKeynameLinux = "p4training2"
 
 func main() {
 
 	var (
-		username = kingpin.Flag(
+		amiDescription = fmt.Sprintf("AMI instance ID to use (note these vary per region and per OS type). Defaults Windows (%s), Linux (%s)", defaultAMIWindows, defaultAMILinux)
+		username       = kingpin.Flag(
 			"username",
-			"Username to create for",
-		).Short('u').Required().String()
+			"Username to create for (defaults to email if not specified)",
+		).Short('u').String()
 		email = kingpin.Flag(
 			"email",
 			"Users email",
@@ -34,6 +41,14 @@ func main() {
 			"shortcode",
 			"Shortcode for course",
 		).Short('s').Required().String()
+		AMI = kingpin.Flag(
+			"instance",
+			amiDescription,
+		).Short('i').String()
+		uselinux = kingpin.Flag(
+			"linux",
+			"Create Linux VM (otherwise Windows by default)",
+		).Short('l').Bool()
 	)
 
 	kingpin.Version(version.Print("p4training"))
@@ -47,6 +62,19 @@ func main() {
 	// Create EC2 service client
 	svc := ec2.New(sess)
 
+	defaultSecurityGroup := defaultSecurityGroupWindows
+	defaultAMI := defaultAMIWindows
+	defaultInstanceSize := defaultInstanceSizeWindows
+	defaultKeyname := defaultKeynameWindows
+	if *uselinux {
+		defaultSecurityGroup = defaultSecurityGroupLinux
+		defaultAMI = defaultAMILinux
+		defaultInstanceSize = defaultInstanceSizeLinux
+		defaultKeyname = defaultKeynameLinux
+	}
+	if *AMI != "" {
+		defaultAMI = *AMI
+	}
 	// Retrieve the security group descriptions
 	result, err := svc.DescribeSecurityGroups(&ec2.DescribeSecurityGroupsInput{
 		GroupNames: aws.StringSlice([]string{defaultSecurityGroup}),
@@ -73,9 +101,9 @@ func main() {
 
 	// Specify the details of the instance that you want to create.
 	runResult, err := svc.RunInstances(&ec2.RunInstancesInput{
-		// An Amazon Linux AMI ID for t2.micro instances in the us-west-2 region
 		ImageId:          aws.String(defaultAMI),
 		InstanceType:     aws.String(defaultInstanceSize),
+		KeyName:          aws.String(defaultKeyname),
 		MinCount:         aws.Int64(1),
 		MaxCount:         aws.Int64(1),
 		SecurityGroupIds: aws.StringSlice([]string{grpID}),
@@ -108,6 +136,10 @@ func main() {
 			{
 				Key:   aws.String("Course"),
 				Value: aws.String(*shortcode),
+			},
+			{
+				Key:   aws.String("Owner"),
+				Value: aws.String(os.Getenv("USER")),
 			},
 		},
 	})
