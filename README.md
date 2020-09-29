@@ -29,24 +29,28 @@ Check the [releases tab](https://github.com/rcowham/p4training/releases) for the
 Execute help:
 
 ```bash
-$ ./p4training -h
-usage: p4training --username=USERNAME --email=EMAIL --shortcode=SHORTCODE [<flags>]
+ ./p4training -h
+usage: p4training --email=EMAIL --shortcode=SHORTCODE [<flags>]
 
 Flags:
   -h, --help                 Show context-sensitive help (also try --help-long and --help-man).
-  -u, --username=USERNAME    Username to create for
+  -u, --username=USERNAME    Username to create for (defaults to email if not specified)
   -e, --email=EMAIL          Users email
   -s, --shortcode=SHORTCODE  Shortcode for course
+  -i, --instance=INSTANCE    AMI instance ID to use (note these vary per region and per OS type). Defaults Windows (ami-099c3bc9f4d739cae), Linux
+                             (ami-07f014eead871d2d6)
+  -l, --linux                Create Linux VM (otherwise Windows by default)
       --version              Show application version.
 ```
 
-To create an AWS instance for a particular user:
+To create an AWS instance for a particular user (first is Windows, second Linux):
 
     ./p4training -s SOME-COURSE -e fred@example.com -u "Fred Bloggs"
+    ./p4training -s SOME-COURSE --linux -e jim@example.com
 
 Note that you only need to quote arguments when they have spaces in them - such as username above.
 
-This will create an EC2 instance with a name `SOME-COURSE#fred@example.com` with tag showing username.
+These will create EC2 instances with a names `SOME-COURSE#fred@example.com` with tag showing username and `SOME-COURSE#joe@example.com`
 
 It is easy to wrap the above in a Bash or Windows to create multiple users. E.g.
 
